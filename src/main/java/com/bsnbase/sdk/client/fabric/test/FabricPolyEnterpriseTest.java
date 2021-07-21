@@ -6,18 +6,19 @@ import com.bsnbase.sdk.client.fabric.FabricClient;
 import com.bsnbase.sdk.entity.config.Config;
 import com.bsnbase.sdk.entity.req.fabric.*;
 import com.bsnbase.sdk.entity.res.fabric.*;
-import com.bsnbase.sdk.util.common.Common;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 
+
+// See: https://youtu.be/jd0lnLyluXE
 public class FabricPolyEnterpriseTest {
 
 
     /**
      * 初始化config
-     *
+     * <p>
      * 应用私钥、应用公钥为pem中具体内容，
      * com.bsnbase.sdk.util.common.Common提供根据路径获取内容方法，
      * Common.readLocalFile参数为pem存储目录的绝对路径，
@@ -25,9 +26,9 @@ public class FabricPolyEnterpriseTest {
      * Common.readFile参数为pem存储目录的相对路径，
      * 例如:Common.readLocalFile("D:/test/private_key.pem")
      * 或者直接填入pem内容。
-     *
+     * <p>
      * puk字段和prk字段为用户公钥和私钥不能为空
-     *
+     * <p>
      * testServerIdn 测试网服务需要配置为true,其他服务不用配置
      */
 
@@ -41,10 +42,11 @@ public class FabricPolyEnterpriseTest {
 //		config.setPuk(Common.readLocalFile("D:/public_key.pem"));
 //		config.setMspDir("D:/test");
 //		config.initConfig(config);
-        String filePath="config/config.json";
-        Config config=Config.buildByConfigJson(filePath);
+        String filePath = "config/config_fabric.json";
+        Config config = Config.buildByConfigJson(filePath);
         config.initConfig(config);
     }
+
     /**
      * 用户注册
      */
@@ -57,7 +59,7 @@ public class FabricPolyEnterpriseTest {
             register.setSecret("123456");
             ResUserRegister resUserRegister = FabricClient.userRegister(register);
             System.out.println(JSONObject.toJSONString(resUserRegister, SerializerFeature.PrettyFormat));
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -71,11 +73,21 @@ public class FabricPolyEnterpriseTest {
         try {
             initConfig();
             ReqKeyEscrow reqkey = new ReqKeyEscrow();
-            String[] args = {"{\"baseKey\":\"test2020050\",\"baseValue\":\"this is string \"}"};
-            reqkey.setArgs(args);
-            reqkey.setFuncName("set");
-            reqkey.setChainCode("cc_app0001202007311431220086431_01");
-            reqkey.setUserName("test28");
+//			String[] args = {"{\"baseKey\":\"test2020050\",\"baseValue\":\"this is string \"}"};
+
+//			See: https://youtu.be/jd0lnLyluXE
+            String[] args = {
+                    "99",  //"BSN international FISCOのChainID" See: https://bsnbase.io/static/tmpFile/bzsc/8interchainservices/8-2-1.html
+                    "abc6b57ba4e1d48fa3c926ef9c07d29362cc4203", // "BSNで作成した FiscoServiceのChaincode Address(0xは削除)",　
+                    "FabricToFiscoBy", // "任意のメッセージ"
+                    "cc_7c47fc1685914593ab6935eb4d956f53" // "BSNで作成した FabricServiceのChaincode deployment name"
+            };
+
+//           See: https://github.com/nkmr-jp/ICH/blob/practice/sample/polychain/fabric-contract/testnet/hellopoly/chaincode.go#L62
+            reqkey.setArgs(args);      // 呼び出すChaincodeのFunctionの引数
+            reqkey.setFuncName("say"); // 呼び出すChaincodeのFunction名
+            reqkey.setChainCode("cc_7c47fc1685914593ab6935eb4d956f53");
+//			reqkey.setUserName("test28");
             ResKeyEscrow resKeyEscrow = FabricClient.reqChainCode(reqkey);
             System.out.println(JSONObject.toJSONString(resKeyEscrow, SerializerFeature.PrettyFormat));
         } catch (Exception e) {
@@ -95,7 +107,7 @@ public class FabricPolyEnterpriseTest {
             r.setSecret("123456");
             ResKeyEscrowEnroll resKeyEscrowEnroll = FabricClient.userEnroll(r);
             System.out.println(JSONObject.toJSONString(resKeyEscrowEnroll, SerializerFeature.PrettyFormat));
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -131,7 +143,7 @@ public class FabricPolyEnterpriseTest {
             reqData.setTxId("aa2b7510d67e5317cb3d290c3c88d1216715d2b0ba9c7d8ce5a65801c50ca967");
             ResGetTransaction transaction = FabricClient.getTransaction(reqData);
             System.out.println(JSONObject.toJSONString(transaction, SerializerFeature.PrettyFormat));
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -139,6 +151,7 @@ public class FabricPolyEnterpriseTest {
 
     /**
      * 获取块信息
+     *
      * @return
      */
     @Test
@@ -149,7 +162,7 @@ public class FabricPolyEnterpriseTest {
             rbf.setTxId("aa2b7510d67e5317cb3d290c3c88d1216715d2b0ba9c7d8ce5a65801c50ca967");
             ResGetBlockInformation blockInfo = FabricClient.getBlockInfo(rbf);
             System.out.println(JSONObject.toJSONString(blockInfo, SerializerFeature.PrettyFormat));
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
